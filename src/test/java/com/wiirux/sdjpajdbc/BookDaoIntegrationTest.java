@@ -10,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.wiirux.sdjpajdbc.dao.BookDao;
+import com.wiirux.sdjpajdbc.domain.Author;
 import com.wiirux.sdjpajdbc.domain.Book;
 
 
@@ -32,7 +33,6 @@ public class BookDaoIntegrationTest {
 		book.setIsbn("test");
 		book.setPublisher("test2");
 		book.setTitle("test3");
-		book.setAuthorId(2L);
 		
 		Book saved = bd.saveNewBook(book);
 		
@@ -48,7 +48,11 @@ public class BookDaoIntegrationTest {
 		book.setIsbn("ISBN");
 		book.setPublisher("PUBLISHER");
 		book.setTitle("Titulo");
-		book.setAuthorId(1L);
+		
+		Author author = new Author();
+		author.setId(3L);
+		
+		book.setAuthor(author);
 		
 		Book saved = bd.saveNewBook(book);
 		saved.setPublisher("PUBLICISTA");
@@ -63,7 +67,11 @@ public class BookDaoIntegrationTest {
 		book.setIsbn("ISBN2");
 		book.setPublisher("PUBLISHER2");
 		book.setTitle("Titulo2");
-		book.setAuthorId(1L);
+		
+		Author author = new Author();
+		author.setId(3L);
+		
+		book.setAuthor(author);
 		Book saved = bd.saveNewBook(book);
 		
 		assertThat(saved).isNotNull();

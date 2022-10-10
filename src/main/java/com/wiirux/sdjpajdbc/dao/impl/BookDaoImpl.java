@@ -4,12 +4,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.sql.Statement;
 
 import javax.sql.DataSource;
 
+import org.hibernate.type.SqlTypes;
 import org.springframework.stereotype.Component;
 
+import com.wiirux.sdjpajdbc.dao.AuthorDao;
 import com.wiirux.sdjpajdbc.dao.BookDao;
 import com.wiirux.sdjpajdbc.domain.Book;
 
@@ -17,9 +20,11 @@ import com.wiirux.sdjpajdbc.domain.Book;
 public class BookDaoImpl implements BookDao {
 	
 	private final DataSource source;
+	private final AuthorDao ad;
 	
-	public BookDaoImpl(DataSource source) {
+	public BookDaoImpl(DataSource source, AuthorDao authorDao) {
 		this.source = source;
+		this.ad = authorDao;
 	}
 	
 	
@@ -97,7 +102,13 @@ public class BookDaoImpl implements BookDao {
 			ps.setString(1, book.getIsbn());
 			ps.setString(2, book.getPublisher());
 			ps.setString(3, book.getTitle());
-			ps.setLong(4, book.getAuthorId());
+			
+			if (book.getAuthor() != null) {
+				ps.setLong(4, book.getAuthor().getId());
+			} else {
+				ps.setNull(4, SqlTypes.BIGINT); //-5
+			}
+			
 			ps.execute();
 			
 			Statement statement = connection.createStatement();
@@ -135,7 +146,11 @@ public class BookDaoImpl implements BookDao {
 			ps.setString(1, book.getIsbn());
 			ps.setString(2, book.getPublisher());
 			ps.setString(3, book.getTitle());
-			ps.setLong(4, book.getAuthorId());
+			
+			if(book.getAuthor() != null) {
+				ps.setLong(4, book.getAuthor().getId());
+			}
+			
 			ps.setLong(5, book.getId());
 			ps.execute();
 			
@@ -179,11 +194,14 @@ public class BookDaoImpl implements BookDao {
 	private Book getBookFromRS(ResultSet resultSet) throws SQLException {
 		// TODO Auto-generated method stub
 		Book book = new Book();
-		book.setId(resultSet.getLong("id"));
-		book.setIsbn(resultSet.getString("isbn"));
-		book.setPublisher(resultSet.getString("publisher"));
-		book.setTitle(resultSet.getString("title"));
-		book.setAuthorId(resultSet.getLong("author_id"));
+		book.setId(resultSet.getLong(1));
+		book.setIsbn(resultSet.getString(2));
+		book.setPublisher(resultSet.getString(3));
+		book.setTitle(resultSet.getString(4));
+		if( resultSet.getString(4) != null ) {
+			book.setAuthor(ad.getById(resultSet.getLong(5)));
+		}
+		
 		return book;
 	}
 
